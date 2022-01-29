@@ -11,7 +11,6 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <crypt.h>
-#include <shadow.h>
 #include "pwent.h" /* Step 2 */
 
 #define TRUE 1
@@ -19,16 +18,20 @@
 #define LENGTH 16
 
 void sighandler() {
+	//sigset_t mask;
+	//sigfillset(&mask);
+	//sigprocmask(SIG_SETMASK, &mask, NULL);
 
+	signal(SIGINT, SIG_IGN); /* This will catch ctrl+c and ignore it*/
+	//signal(SIGTSTP, SIG_IGN); /* This will catch ctrl+z and ignore it*/
 	/* add signalhandling routines here */
 	/* see 'man 2 signal' */
 }
 
 int main(int argc, char *argv[]) {
 
-	struct passwd *passwddata; /* this has to be redefined in step 2 */
-	/* see pwent.h */
-	struct spwd *shadowpasswddata; /* this has to be redefined in step 2 */
+	//struct passwd *passwddata /* Step 1 */
+	mypwent *passwddata; /* Step 2 */
 	/* see pwent.h */
 
 	char important1[LENGTH] = "**IMPORTANT 1**";
@@ -54,39 +57,57 @@ int main(int argc, char *argv[]) {
 		fflush(NULL); /* Flush all  output buffers */
 		__fpurge(stdin); /* Purge any data in stdin buffer */
 
-		if (gets(user) == NULL) /* gets() is vulnerable to buffer */
-			exit(0); /*  overflow attacks.  */
-
+		if (fgets(user,sizeof(user),stdin) == NULL ) {
+			clearerr(stdin); //if EOF only, clear error
+			continue; ///*  overflow attacks.  */
+		}
+		user[strlen(user)-1] = '\0'; //replacing \n with \0
+		
 		/* check to see if important variable is intact after input of login name - do not remove */
 		printf("Value of variable 'important 1' after input of login name: %*.*s\n",
 				LENGTH - 1, LENGTH - 1, important1);
 		printf("Value of variable 'important 2' after input of login name: %*.*s\n",
 		 		LENGTH - 1, LENGTH - 1, important2);
 
+		// using makepass.c to create hashed password -> saving it manually in passdb
+
 		user_pass = getpass(prompt); //enter password using deprecated function :/
-		//passwddata = getpwnam(user); //get user info from /etc/passwd /* Step 1 */
+		passwddata = mygetpwnam(user); //get user info from passdb
 
 		if (passwddata != NULL) {
 			/* You have to encrypt user_pass for this to work */
 			/* Don't forget to include the salt */
-			shadowpasswddata = getspnam(user); //get encrypted password from /etc/shadow
-			//printf("password in shadow file: %s \n", shadowpasswddata->sp_pwdp);
+			
 
-			char *user_pass_encrypted = crypt(user_pass, shadowpasswddata->sp_pwdp);
-			//printf("encryption of typed pass: %s \n", user_pass_encrypted);
-			// schulze:
-			// $6
-			// $Dvon03J3/yxkUTWF$
-			// JiIGRAV22.iMUOMPW9MJidTt.aPsKOYK4Bx.Av5EMcVmifp1SkhRELWHLKPWCGmv3nhcFk7tgi7/9.YCO/C
-			//schulze:$6$Dvon03J3/yxkUTWF$JiIGRAV22.iMUOMPW9MJidTt.aPsKOYK4Bx.Av5EMcVmifp1SkhRELWHLKPWCGmv3nhcFk7tgi7/9.YCO/CnS/:18577:0:99999:7:::
-
-			if (!strcmp(user_pass_encrypted, shadowpasswddata->sp_pwdp)) {
+			char *user_pass_encrypted = crypt(user_pass, passwddata->passwd_salt);
+			if (&user_pass_encrypted == NULL) {
+				perror("Error");exit(EXIT_FAILURE);
+			}
+			printf("encryption of typed pass: %s \n", user_pass_encrypted);
+			if (passwddata->pwfailed >= 10) {
+				printf("Too many failed login attempts. Your account has been locked.\nContact and Admin to unlock your account.\n");
+			} else if (!strcmp(user_pass_encrypted, passwddata->passwd)) {
 
 				printf(" You're in !\n");
-
+				passwddata->pwfailed = 0;
+				passwddata->pwage = passwddata->pwage + 1;
+				mysetpwent(user, passwddata);
+				if (passwddata->pwage > 100) {
+					printf(" Your password is OLD!!!!\n");
+				} 
+				
+				
 				/*  check UID, see setuid(2) */
-				/*  start a shell, use execve(2) */
 
+
+				// setuid(passwddata->uid)
+				/*  start a shell, use execve(2) */
+				execvp("/bin/sh", "");
+
+				return 0;
+			} else {
+				passwddata->pwfailed = passwddata->pwfailed + 1;
+				mysetpwent(user, passwddata);
 			}
 		}
 		printf("Login Incorrect \n");
