@@ -96,15 +96,12 @@ int main(int argc, char *argv[]) {
 					printf(" Your password is OLD!!!!\n");
 				} 
 				
-				
 				/*  check UID, see setuid(2) */
-
-
-				// setuid(passwddata->uid)
+				setuid(passwddata->uid);
 				/*  start a shell, use execve(2) */
-				execvp("/bin/sh", "");
-
-				return 0;
+				if (execve("/bin/bash",NULL,NULL) < 0) {     /* execute the command  */
+					perror("Error");exit(EXIT_FAILURE);
+				}
 			} else {
 				passwddata->pwfailed = passwddata->pwfailed + 1;
 				mysetpwent(user, passwddata);
