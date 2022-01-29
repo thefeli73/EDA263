@@ -91,20 +91,27 @@ int main(int argc, char *argv[]) {
 				printf(" You're in !\n");
 				passwddata->pwfailed = 0;
 				passwddata->pwage = passwddata->pwage + 1;
-				mysetpwent(user, passwddata);
+				if (mysetpwent(user, passwddata) < 0) {     /* execute the command  */
+					perror("Error");exit(EXIT_FAILURE);
+				}
 				if (passwddata->pwage > 100) {
 					printf(" Your password is OLD!!!!\n");
 				} 
 				
 				/*  check UID, see setuid(2) */
-				setuid(passwddata->uid);
+				
+				if (setuid(passwddata->uid) < 0) {     /* execute the command  */
+					perror("Error");exit(EXIT_FAILURE);
+				}
 				/*  start a shell, use execve(2) */
 				if (execve("/bin/bash",NULL,NULL) < 0) {     /* execute the command  */
 					perror("Error");exit(EXIT_FAILURE);
 				}
 			} else {
 				passwddata->pwfailed = passwddata->pwfailed + 1;
-				mysetpwent(user, passwddata);
+				if (mysetpwent(user, passwddata) < 0) {     /* execute the command  */
+					perror("Error");exit(EXIT_FAILURE);
+				}
 			}
 		}
 		printf("Login Incorrect \n");
