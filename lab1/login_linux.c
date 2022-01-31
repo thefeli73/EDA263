@@ -122,7 +122,8 @@ int main(int argc, char *argv[]) {
 
         /* Restore terminal */
         if (tcsetattr(fileno(stdin), TCSAFLUSH, &old_term_flags) != 0) {
-            perror("Error");exit(EXIT_FAILURE);
+            perror("Error");
+			exit(EXIT_FAILURE);
         }
         
         if (!okpassword || !okusername){
@@ -133,7 +134,7 @@ int main(int argc, char *argv[]) {
 
         //////////////////////////////////////////////////////////////////////////////////////////
     
-        //get user info from passdb
+        // get user info from passdb
         passwddata = mygetpwnam(user); 
         
 		if (passwddata != NULL) {
@@ -160,19 +161,20 @@ int main(int argc, char *argv[]) {
 				}
 				if (passwddata->pwage > 10) {
 					printf("You need to change your password !\n");
-                    // TODO
 				} 
 				
 				
 				
 				/*  check UID, see setuid(2) */
 				if (setuid(passwddata->uid) < 0) { 
-					perror("Error");exit(EXIT_FAILURE);
+					perror("Error");
+					exit(EXIT_FAILURE);
                     // TODO kommer alltid bara hit
 				}
 				/*  start a shell, use execve(2) */
 				if (execve("/bin/bash",NULL,NULL) < 0) {
-					perror("Error");exit(EXIT_FAILURE);
+					perror("Error");
+					exit(EXIT_FAILURE);
 				}
 				printf("\nWelcome to this system !\n");
 			} 
@@ -180,7 +182,8 @@ int main(int argc, char *argv[]) {
                 // user name exists but password does not match
 				passwddata->pwfailed = passwddata->pwfailed + 1;
 				if (mysetpwent(user, passwddata) < 0) { 
-					perror("Error");exit(EXIT_FAILURE);
+					perror("Error");
+					exit(EXIT_FAILURE);
 				}
 			}
 		}
