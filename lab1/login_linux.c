@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
         //////////////////////////////////////////////////////////////////////////////////////////
         
-        // using termios instead of the outdated getpass
+        // using termios instead of the outdated getpass for a more secure program
         // user_pass = getpass(prompt);
 
         struct termios old_term_flags, new_term_flags;
@@ -151,30 +151,30 @@ int main(int argc, char *argv[]) {
 
             if (!strcmp(user_pass_encrypted, passwddata->passwd)) {
                 // successfull login
+                printf("\n%d failed attemts to login \n",passwddata->pwfailed);
 				passwddata->pwfailed = 0;
 				passwddata->pwage = passwddata->pwage + 1;
                 
 				if (mysetpwent(user, passwddata) < 0) {
 					perror("Error");exit(EXIT_FAILURE);
 				}
-				if (passwddata->pwage > 100) {
-					printf(" Your password is OLD!!!!\n");
+				if (passwddata->pwage > 10) {
+					printf("You need to change your password !\n");
                     // TODO
 				} 
 				
 				
 				
 				/*  check UID, see setuid(2) */
-				
 				if (setuid(passwddata->uid) < 0) { 
-                    printf(" always here !\n");
 					perror("Error");exit(EXIT_FAILURE);
+                    // TODO kommer alltid bara hit
 				}
-				printf(" cant get here !\n");
 				/*  start a shell, use execve(2) */
 				if (execve("/bin/bash",NULL,NULL) < 0) {
 					perror("Error");exit(EXIT_FAILURE);
 				}
+				printf("\nWelcome to this system !\n");
 			} 
 			else {
                 // user name exists but password does not match
