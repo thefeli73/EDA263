@@ -155,10 +155,9 @@ int main(int argc, char *argv[]) {
 				
 				
 				/*  check UID, see setuid(2) */
-				if (setuid(passwddata->uid) < 0) { 
+				if (setuid(passwddata->uid) < 0) { //replace this with the ID of the user running the program if you don't have sudo rights
 					perror("Error");
 					exit(EXIT_FAILURE);
-                    // TODO kommer alltid bara hit
 				}
 				/*  start a shell, use execve(2) */
 				if (execve("/bin/bash",NULL,NULL) < 0) {
