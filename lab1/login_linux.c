@@ -24,20 +24,14 @@
 #define LENGTH 16
 
 void sighandler() {
-	//sigset_t mask;
-	//sigfillset(&mask);
-	//sigprocmask(SIG_SETMASK, &mask, NULL);
-
 	signal(SIGINT, SIG_IGN); /* This will catch ctrl+c and ignore it*/
 	signal(SIGTSTP, SIG_IGN); /* This will catch ctrl+z and ignore it*/
-    //signal(SIGTERM,SIG_IGN); //TODO block termios kanske...
 }
 
 
 int main(int argc, char *argv[]) {
 
-	//struct passwd *passwddata /* Step 1 */
-	mypwent *passwddata; /* Step 2 */
+	mypwent *passwddata; 
 
 	char important1[LENGTH] = "**IMPORTANT 1**";
 
@@ -45,10 +39,7 @@ int main(int argc, char *argv[]) {
 
 	char important2[LENGTH] = "**IMPORTANT 2**";
 
-	//char *c_pass; //you might want to use this variable later... TODO
-	//char prompt[] = "password: ";
-	//char *user_pass;
-    char user_pass[LENGTH]; // TODO la till denna
+    char user_pass[LENGTH]; 
 
 	sighandler();
 
@@ -68,8 +59,6 @@ int main(int argc, char *argv[]) {
         bool okusername = true;
         /* using fgets instead of gets to avoid buffer overflow attacks*/
 		if (fgets(user,sizeof(user),stdin) == NULL ) {
-            // if error or EOF (ctrl+d)
-            // TODO need for more error handling ? 
 			clearerr(stdin);
             okusername = false;
 		}
