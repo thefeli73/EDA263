@@ -29,7 +29,7 @@ void sighandler() {
 	//sigprocmask(SIG_SETMASK, &mask, NULL);
 
 	signal(SIGINT, SIG_IGN); /* This will catch ctrl+c and ignore it*/
-	//signal(SIGTSTP, SIG_IGN); /* This will catch ctrl+z and ignore it*/
+	signal(SIGTSTP, SIG_IGN); /* This will catch ctrl+z and ignore it*/
     //signal(SIGTERM,SIG_IGN); //TODO block termios kanske...
 }
 
